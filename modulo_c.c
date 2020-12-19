@@ -155,16 +155,20 @@ void codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS], int taman
     tamanhoCod = tamanhoBlocoCodBits(matriz,bloco);
     printf("\n%d", tamanhoCod);
     char Wbuffer[tamanhoCod];
+    for (int j = 0; j < tamanhoCod; j++) Wbuffer[j] = '\0';
     printf ("\n%d", tamanhoBloco);
+    printf ("\n");
     for(int i = 0; i < tamanhoBloco; i++){
         simbolo = buffer[i];
+        //printf(" %d.", buffer[i]);
+        //printf ("%s ", (matriz[bloco][simbolo]).cod);
         strcat (Wbuffer, (matriz[bloco][simbolo]).cod);
     }
     printf ("\n%s", Wbuffer);
-    
+
 }
 
-void codificaFile(char *filename, char tipo,int n_blocks,CODFREQ (*matriz)[SIMBOLOS], int *tamanhoBlocos){
+void codificaFile(char *filename, char tipo, int n_blocks, CODFREQ (*matriz)[SIMBOLOS], int *tamanhoBlocos){
     unsigned char *buffer;
     int tamanho = 0;
     FILE *file = fopen(filename,"rb");
