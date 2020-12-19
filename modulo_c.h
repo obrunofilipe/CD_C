@@ -7,3 +7,8 @@
 int nBlocks(FILE *);
 //void importCode(char*,int,int **);
 int main(int , char **);
+
+typedef struct codFreq{
+    char *cod;
+    int freq;
+} CODFREQ;
