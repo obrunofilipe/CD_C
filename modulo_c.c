@@ -11,6 +11,7 @@ int nBlocks(FILE *cod){
     }
     return n_blocks;
 }
+
 void importCode(char* codFile, int n_blocks, CODFREQ (*matriz)[SIMBOLOS], int *tamanhoBlocos){
     FILE *cod = fopen (codFile, "rb");
     int arrobas = 0;
@@ -21,8 +22,6 @@ void importCode(char* codFile, int n_blocks, CODFREQ (*matriz)[SIMBOLOS], int *t
         while(arrobas != 3){
             if(fgetc(cod) == '@') arrobas++;
         }
-
-        printf ("Número de Blocos : %d\n", n_blocks);
         char c;
         int blocos = 0;
         int simbolos = 0;
@@ -65,6 +64,7 @@ void importCode(char* codFile, int n_blocks, CODFREQ (*matriz)[SIMBOLOS], int *t
     }
     fclose(cod); 
 }
+
 void importFreq(char* codFile,int n_blocks, CODFREQ (*matriz)[SIMBOLOS]){
    FILE *cod = fopen (codFile, "rb");
     int arrobas = 0;
@@ -75,8 +75,6 @@ void importFreq(char* codFile,int n_blocks, CODFREQ (*matriz)[SIMBOLOS]){
         while(arrobas != 3){
             if(fgetc(cod) == '@') arrobas++;
         }
-
-        printf ("Número de Blocos : %d\n", n_blocks);
         char c;
         int blocos = 0;
         int simbolos = 0;
@@ -116,6 +114,7 @@ char tipoFicheiro(FILE *fich){
     c = fgetc(fich);
     return c;
 }
+
 //calcula os digitos de um inteiro
 int nDigitos(int cod){
     int ndigitos = 0;
@@ -154,18 +153,14 @@ unsigned char * codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS]
     int tamanhoCodBits,simbolo,index, i_bit,byte;
     unsigned char *blocoCodificado;
     tamanhoCodBits = tamanhoBlocoCodBits(matriz,bloco);
-    printf("\n%d", tamanhoCodBits);
     char Wbuffer[tamanhoCodBits];
     for (int j = 0; j < tamanhoCodBits; j++) Wbuffer[j] = '\0';
-    printf ("\n");
     for(int i = 0; i < tamanhoBloco; i++){
         simbolo = buffer[i];
         strcat (Wbuffer, (matriz[bloco][simbolo]).cod);
     }
-    printf ("\n%s \n", Wbuffer);
     (*tamanhoBytes) = tamanhoCodBits/8 + 1;
     blocoCodificado = malloc(*tamanhoBytes);
-    printf("\nTamanho Codificado: %d\n",*tamanhoBytes);
     index = 0;
     i_bit = 7;
     byte = 0;
@@ -173,8 +168,7 @@ unsigned char * codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS]
         if(i_bit == -1){
             i_bit = 7;
             blocoCodificado[index] = byte; 
-            index++; 
-            printf("%d ",byte);
+            index++;
             byte = 0;
         }
         if (Wbuffer[i] == '1') byte = byte + pow(2,i_bit);
@@ -189,6 +183,13 @@ void codificaFile(char *filename, char tipo, int n_blocks, CODFREQ (*matriz)[SIM
     int tamanho = 0,tamanhoBlocoCodificado;
     FILE *file = fopen(filename,"rb");
     FILE *shaf = fopen(fileShaf,"wb");
+    printf ("John Doe, a12234, MIEI/CD, 1-jan-2021 \n");
+    printf ("Módulo: c (codificação dum ficheiro de símbolos)\n");
+    printf ("Número de blocos: %d\n", n_blocks);
+    for (int i = 0; i < n_blocks; i++){
+        printf ("Tamanho antes/depois & taxa de compressão (bloco %d): \n", i+1);
+    }
+    printf ("Taxa de compressão global: 30\n");
     for(int bloco = 0; bloco < n_blocks; bloco++){
         if (bloco < n_blocks - 1) {
             tamanho = tamanhoBlocos[0];
@@ -199,10 +200,6 @@ void codificaFile(char *filename, char tipo, int n_blocks, CODFREQ (*matriz)[SIM
             buffer = malloc(tamanho);
         }
         fread(buffer,1,tamanho,file);
-        printf("\n");
-       /* for(int i = 0; i < tamanho ; i++)
-            printf(" %d",buffer[i]);*/
-        printf("\ndeu\n");
         Wbuffer = codificaBloco(buffer,matriz,tamanho,bloco,n_blocks,&tamanhoBlocoCodificado);
         if (bloco == 0) fprintf(shaf,"@%d@%d@",n_blocks,tamanhoBlocoCodificado);
         else fprintf(shaf,"@%d@",tamanhoBlocoCodificado);
@@ -214,7 +211,7 @@ void codificaFile(char *filename, char tipo, int n_blocks, CODFREQ (*matriz)[SIM
     fclose(shaf);
 }
 
-int moduloC(char *filename){
+int moduloC(char *filename, int begin){
     int size = strlen(filename);
     int n_blocks;
     FILE *cod;
@@ -223,7 +220,6 @@ int moduloC(char *filename){
     strcpy(fileFreq,filename);
     strcpy(fileShaf,filename);
     strcat(codFile,".cod"); // nome do ficheito .cod
-    printf("Ficheiro: %s \n",codFile);
     cod = fopen(codFile,"rb");
     tipo = tipoFicheiro(cod);
     n_blocks = nBlocks(cod);
@@ -234,29 +230,18 @@ int moduloC(char *filename){
     int tamanhoBlocos[2];
     importCode(codFile, n_blocks, matriz ,tamanhoBlocos); // importar os codigos shanonfannon
     importFreq(strcat(fileFreq,".freq"),n_blocks,matriz);// importar as frequencias
-    for(int i = 0; i < n_blocks; i++){
-        printf("simbolos: ");
-        for(int j = 0; j < SIMBOLOS; j++){
-            if ((matriz[i][j]).cod != NULL )printf("%s(%d), ", (matriz[i][j]).cod,(matriz[i][j]).freq);
-            }
-        printf("\n");
-    }
     
     codificaFile(filename,tipo,n_blocks,matriz,tamanhoBlocos,strcat(fileShaf,".shaf"));
-    printf("\nTipo de ficheiro: %c",tipo);
-    printf("\nTamanho Blocos: ");
-    for(int i = 0; i < 2 ; i++)
-        printf("%d ",tamanhoBlocos[i]);
-    printf("\nTamanho bloco cod:%d",tamanhoBlocoCod(matriz,1));
+    clock_t end = clock();
+    double time = (double)(end - begin)/CLOCKS_PER_SEC;
+    printf ("Tempo de execução do módulo (milissegundos): %f\n", time*1000);
+    printf ("%s\n", fileShaf);
     return 0;
-    
 }
 
 int main(int argc, char *argv[]){
     clock_t begin = clock();
-    moduloC(argv[1]);
-    clock_t end = clock();
-    double time = (double)(end - begin)/CLOCKS_PER_SEC;
-    printf("\nTempo de execução: %f",time);
+    char fichFinal[25];
+    moduloC(argv[1], begin);
     return 0;
 }
