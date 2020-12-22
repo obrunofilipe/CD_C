@@ -80,8 +80,7 @@ void importFreq(char* codFile,int n_blocks, CODFREQ (*matriz)[SIMBOLOS]){
         char c;
         int blocos = 0;
         int simbolos = 0;
-        char ant = ';';
-        int freq;
+        int freq,freqAnt;
         
         while(blocos < n_blocks){
             simbolos = 0;
@@ -90,7 +89,7 @@ void importFreq(char* codFile,int n_blocks, CODFREQ (*matriz)[SIMBOLOS]){
             c = fgetc(cod);
 
             while(c != '@'){
-                if(c == ';') (matriz[blocos][simbolos]).freq = 0;
+                if(c == ';') (matriz[blocos][simbolos]).freq = (matriz[blocos][simbolos - 1]).freq;
                 else{
                     freq = 0;
                     while(c != ';' && c != '@'){//calcula a frequencia do simbolo em int
@@ -158,15 +157,15 @@ unsigned char * codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS]
     printf("\n%d", tamanhoCodBits);
     char Wbuffer[tamanhoCodBits];
     for (int j = 0; j < tamanhoCodBits; j++) Wbuffer[j] = '\0';
-    printf ("\n%d", tamanhoBloco);
     printf ("\n");
     for(int i = 0; i < tamanhoBloco; i++){
         simbolo = buffer[i];
         strcat (Wbuffer, (matriz[bloco][simbolo]).cod);
     }
-    //printf ("\n%s \n", Wbuffer);
+    printf ("\n%s \n", Wbuffer);
     (*tamanhoBytes) = tamanhoCodBits/8 + 1;
     blocoCodificado = malloc(*tamanhoBytes);
+    printf("\nTamanho Codificado: %d\n",*tamanhoBytes);
     index = 0;
     i_bit = 7;
     byte = 0;
@@ -201,8 +200,8 @@ void codificaFile(char *filename, char tipo, int n_blocks, CODFREQ (*matriz)[SIM
         }
         fread(buffer,1,tamanho,file);
         printf("\n");
-        for(int i = 0; i < tamanho ; i++)
-            printf(" %d",buffer[i]);
+       /* for(int i = 0; i < tamanho ; i++)
+            printf(" %d",buffer[i]);*/
         printf("\ndeu\n");
         Wbuffer = codificaBloco(buffer,matriz,tamanho,bloco,n_blocks,&tamanhoBlocoCodificado);
         if (bloco == 0) fprintf(shaf,"@%d@%d@",n_blocks,tamanhoBlocoCodificado);
@@ -238,7 +237,7 @@ int moduloC(char *filename){
     for(int i = 0; i < n_blocks; i++){
         printf("simbolos: ");
         for(int j = 0; j < SIMBOLOS; j++){
-            if ((matriz[i][j]).cod != NULL )printf("%s(%d), ", (matriz[i][j]).cod,j);
+            if ((matriz[i][j]).cod != NULL )printf("%s(%d), ", (matriz[i][j]).cod,(matriz[i][j]).freq);
             }
         printf("\n");
     }
