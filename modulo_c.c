@@ -1,5 +1,6 @@
  #include "modulo_c.h"
- #include "time.h"
+ #include <time.h>
+ #include <math.h>
 
 int nBlocks(FILE *cod){
     char c;
@@ -150,28 +151,45 @@ int tamanhoBlocoCod(CODFREQ (*matriz)[SIMBOLOS], int bloco){
     return tamanhoCod;
 }
 
-void codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS], int tamanhoBloco, int bloco, int n_blocks){
-    int tamanhoCod,simbolo;
-    tamanhoCod = tamanhoBlocoCodBits(matriz,bloco);
-    printf("\n%d", tamanhoCod);
-    char Wbuffer[tamanhoCod];
-    for (int j = 0; j < tamanhoCod; j++) Wbuffer[j] = '\0';
+unsigned char * codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS], int tamanhoBloco, int bloco, int n_blocks, int *tamanhoBytes){
+    int tamanhoCodBits,simbolo,index, i_bit,byte;
+    unsigned char *blocoCodificado;
+    tamanhoCodBits = tamanhoBlocoCodBits(matriz,bloco);
+    printf("\n%d", tamanhoCodBits);
+    char Wbuffer[tamanhoCodBits];
+    for (int j = 0; j < tamanhoCodBits; j++) Wbuffer[j] = '\0';
     printf ("\n%d", tamanhoBloco);
     printf ("\n");
     for(int i = 0; i < tamanhoBloco; i++){
         simbolo = buffer[i];
-        //printf(" %d.", buffer[i]);
-        //printf ("%s ", (matriz[bloco][simbolo]).cod);
         strcat (Wbuffer, (matriz[bloco][simbolo]).cod);
     }
-    printf ("\n%s", Wbuffer);
-
+    //printf ("\n%s \n", Wbuffer);
+    (*tamanhoBytes) = tamanhoCodBits/8 + 1;
+    blocoCodificado = malloc(*tamanhoBytes);
+    index = 0;
+    i_bit = 7;
+    byte = 0;
+    for(int i = 0; Wbuffer[i] != '\0' && index < *tamanhoBytes; i++){
+        if(i_bit == -1){
+            i_bit = 7;
+            blocoCodificado[index] = byte; 
+            index++; 
+            printf("%d ",byte);
+            byte = 0;
+        }
+        if (Wbuffer[i] == '1') byte = byte + pow(2,i_bit);
+        i_bit--;
+    }
+    if(index < (*tamanhoBytes)) blocoCodificado[index] = byte;
+    return blocoCodificado; 
 }
 
-void codificaFile(char *filename, char tipo, int n_blocks, CODFREQ (*matriz)[SIMBOLOS], int *tamanhoBlocos){
-    unsigned char *buffer;
-    int tamanho = 0;
+void codificaFile(char *filename, char tipo, int n_blocks, CODFREQ (*matriz)[SIMBOLOS], int *tamanhoBlocos, char *fileShaf){
+    unsigned char *buffer,*Wbuffer;
+    int tamanho = 0,tamanhoBlocoCodificado;
     FILE *file = fopen(filename,"rb");
+    FILE *shaf = fopen(fileShaf,"wb");
     for(int bloco = 0; bloco < n_blocks; bloco++){
         if (bloco < n_blocks - 1) {
             tamanho = tamanhoBlocos[0];
@@ -182,18 +200,29 @@ void codificaFile(char *filename, char tipo, int n_blocks, CODFREQ (*matriz)[SIM
             buffer = malloc(tamanho);
         }
         fread(buffer,1,tamanho,file);
-        codificaBloco(buffer,matriz,tamanho,bloco,n_blocks);
+        printf("\n");
+        for(int i = 0; i < tamanho ; i++)
+            printf(" %d",buffer[i]);
+        printf("\ndeu\n");
+        Wbuffer = codificaBloco(buffer,matriz,tamanho,bloco,n_blocks,&tamanhoBlocoCodificado);
+        if (bloco == 0) fprintf(shaf,"@%d@%d@",n_blocks,tamanhoBlocoCodificado);
+        else fprintf(shaf,"@%d@",tamanhoBlocoCodificado);
+        fwrite(Wbuffer,1,tamanhoBlocoCodificado,shaf);
+        free(Wbuffer);
+        free(buffer);
     }
     fclose(file);
+    fclose(shaf);
 }
 
 int moduloC(char *filename){
     int size = strlen(filename);
     int n_blocks;
     FILE *cod;
-    char codFile[size],tipo,fileFreq[size];
+    char codFile[size],tipo,fileFreq[size],fileShaf[size];
     strcpy (codFile,filename); 
     strcpy(fileFreq,filename);
+    strcpy(fileShaf,filename);
     strcat(codFile,".cod"); // nome do ficheito .cod
     printf("Ficheiro: %s \n",codFile);
     cod = fopen(codFile,"rb");
@@ -208,12 +237,13 @@ int moduloC(char *filename){
     importFreq(strcat(fileFreq,".freq"),n_blocks,matriz);// importar as frequencias
     for(int i = 0; i < n_blocks; i++){
         printf("simbolos: ");
-        for(int j = 0; j < SIMBOLOS; j++)printf("%s(%d), ", (matriz[i][j]).cod,j);
+        for(int j = 0; j < SIMBOLOS; j++){
+            if ((matriz[i][j]).cod != NULL )printf("%s(%d), ", (matriz[i][j]).cod,j);
+            }
         printf("\n");
     }
     
-    codificaFile(filename,tipo,n_blocks,matriz,tamanhoBlocos);
-    //lerBlocos(filename,tipo,n_blocks, matrizCodigos, tamanhoBlocos);
+    codificaFile(filename,tipo,n_blocks,matriz,tamanhoBlocos,strcat(fileShaf,".shaf"));
     printf("\nTipo de ficheiro: %c",tipo);
     printf("\nTamanho Blocos: ");
     for(int i = 0; i < 2 ; i++)
