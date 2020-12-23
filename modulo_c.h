@@ -35,7 +35,7 @@ unsigned char * codificaBloco(unsigned char * ,CODFREQ[][SIMBOLOS], int , int , 
 //funcao que efetivamente codifica o ficheiro original bloco a bloco e cria o ficheiro binário final .shaf. Esta funcao le a partir do ficheiro origial para um buffer (com a funcao fread)
 //e passa esse buffer como argumento para a funcao codificaFile, bem como os restantes argumentos necessarios a codificacao de um bloco. Esta funcao tambem armazena os tamanhos globais dos 
 //ficheiros original e codificado de forma a determinar, posteriormente, a taxa de compressao do ultimo.
-void codificaFile(char *, char , int, CODFREQ[][SIMBOLOS], int *, char *);
+void codificaFile(char *, char , int, CODFREQ[][SIMBOLOS], int *, int*, char *, float *, float *);
 
 //int moduloC(char *filename, int begin);
 int main(int , char **);
