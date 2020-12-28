@@ -213,27 +213,31 @@ int moduloC(char *filename, int begin){
     strcpy(fileShaf,filename);
     strcat(codFile,".cod"); // nome do ficheito .cod
     cod = fopen(codFile,"rb");
-    tipo = tipoFicheiro(cod);
-    n_blocks = nBlocks(cod);
-    fclose(cod);
-    CODFREQ matriz[n_blocks][SIMBOLOS];
-    int tamanhoBlocos[2],tamanhoBlocosCodificado[n_blocks];
-    importCode(codFile, n_blocks, matriz ,tamanhoBlocos); // importar os codigos shanonfannon
-    importFreq(strcat(fileFreq,".freq"),n_blocks,matriz);// importar as frequencias
-    
-    codificaFile(filename,tipo,n_blocks,matriz,tamanhoBlocos, tamanhoBlocosCodificado, strcat(fileShaf,".shaf"), &tamanhoGlobal, &tamanhoGlobalCodificado);
-    taxaDeCompressao = tamanhoGlobal/tamanhoGlobalCodificado;
-    clock_t end = clock();
-    double time = (double)(end - begin)/CLOCKS_PER_SEC;
-    printf ("Bruno Filipe, a93298, João Delgado, a93240, MIEI/CD, 1-jan-2021 \n");
-    printf ("Módulo: C (codificação dum ficheiro de símbolos)\n");
-    printf ("Número de blocos: %d\n", n_blocks);
-    for (i = 0; i < n_blocks - 1; i++) 
-        printf ("Tamanho antes/depois & taxa de compressão (bloco %d): %d/%d\n", i+1, tamanhoBlocos[0], tamanhoBlocosCodificado[i]);
-    printf ("Tamanho antes/depois & taxa de compressão (bloco %d): %d/%d\n", i+1, tamanhoBlocos[1], tamanhoBlocosCodificado[i]);
-    printf ("Taxa de compressão global: %f\n", taxaDeCompressao); //print para o terminal
-    printf ("Tempo de execução do módulo (milissegundos): %f\n", time*1000); //print para o terminal 
-    printf ("%s\n", fileShaf);
+    if(!cod) printf("Erro ficheiro .cod nao encontrado!\n");
+    else{
+        tipo = tipoFicheiro(cod);
+        n_blocks = nBlocks(cod);
+        fclose(cod);
+        CODFREQ matriz[n_blocks][SIMBOLOS];
+        int tamanhoBlocos[2],tamanhoBlocosCodificado[n_blocks];
+        importCode(codFile, n_blocks, matriz ,tamanhoBlocos); // importar os codigos shanonfannon
+        importFreq(strcat(fileFreq,".freq"),n_blocks,matriz);// importar as frequencias
+        
+        codificaFile(filename,tipo,n_blocks,matriz,tamanhoBlocos, tamanhoBlocosCodificado, strcat(fileShaf,".shaf"), &tamanhoGlobal, &tamanhoGlobalCodificado);
+        taxaDeCompressao = tamanhoGlobal/tamanhoGlobalCodificado;
+        clock_t end = clock();
+        double time = (double)(end - begin)/CLOCKS_PER_SEC;
+        printf ("Bruno Filipe, a93298, João Delgado, a93240, MIEI/CD, 1-jan-2021 \n");
+        printf ("Módulo: C (codificação dum ficheiro de símbolos)\n");
+        printf ("Número de blocos: %d\n", n_blocks);
+        for (i = 0; i < n_blocks - 1; i++) 
+            printf ("Tamanho antes/depois & taxa de compressão (bloco %d): %d/%d\n", i+1, tamanhoBlocos[0], tamanhoBlocosCodificado[i]);
+        printf ("Tamanho antes/depois & taxa de compressão (bloco %d): %d/%d\n", i+1, tamanhoBlocos[1], tamanhoBlocosCodificado[i]);
+        printf ("Taxa de compressão global: %f\n", taxaDeCompressao); //print para o terminal
+        printf ("Tempo de execução do módulo (milissegundos): %f\n", time*1000); //print para o terminal 
+        printf ("%s\n", fileShaf);
+    }
+
     return 0;
 }
 
