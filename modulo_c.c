@@ -32,7 +32,6 @@ int nDigitos(int cod){
 
 int tamanhoBlocoCodBits(CODFREQ (*matriz)[SIMBOLOS], int bloco){
     int tamanhoCod = 0;
-    char *cod;
     for(int simbolo = 0; simbolo < SIMBOLOS; simbolo++){
         if( (matriz[bloco][simbolo]).cod != NULL){
             tamanhoCod += strlen((matriz[bloco][simbolo]).cod) * (matriz[bloco][simbolo]).freq;
@@ -43,7 +42,6 @@ int tamanhoBlocoCodBits(CODFREQ (*matriz)[SIMBOLOS], int bloco){
 
 int tamanhoBlocoCod(CODFREQ (*matriz)[SIMBOLOS], int bloco){
     int tamanhoCod = 0;
-    char *cod;
     for(int simbolo = 0; simbolo < SIMBOLOS; simbolo++){
         if( (matriz[bloco][simbolo]).cod != NULL){
             tamanhoCod += strlen((matriz[bloco][simbolo]).cod) * (matriz[bloco][simbolo]).freq;
@@ -65,7 +63,6 @@ void importCode(char* codFile, int n_blocks, CODFREQ (*matriz)[SIMBOLOS], int *t
         char c;
         int blocos = 0;
         int simbolos = 0;
-        char ant = ';';
         int codigo,tamanho;
         
         while(blocos < n_blocks){
@@ -117,7 +114,7 @@ void importFreq(char* codFile,int n_blocks, CODFREQ (*matriz)[SIMBOLOS]){
         char c;
         int blocos = 0;
         int simbolos = 0;
-        int freq,freqAnt;
+        int freq;
         
         while(blocos < n_blocks){
             simbolos = 0;
@@ -219,8 +216,6 @@ int moduloC(char *filename, int begin){
     tipo = tipoFicheiro(cod);
     n_blocks = nBlocks(cod);
     fclose(cod);
-    int matrizCodigos[n_blocks][SIMBOLOS];
-    int matrizFreq[n_blocks][SIMBOLOS];
     CODFREQ matriz[n_blocks][SIMBOLOS];
     int tamanhoBlocos[2],tamanhoBlocosCodificado[n_blocks];
     importCode(codFile, n_blocks, matriz ,tamanhoBlocos); // importar os codigos shanonfannon
@@ -244,7 +239,6 @@ int moduloC(char *filename, int begin){
 
 int main(int argc, char *argv[]){
     clock_t begin = clock();
-    char fichFinal[25];
     moduloC(argv[1], begin);
     return 0;
 }
