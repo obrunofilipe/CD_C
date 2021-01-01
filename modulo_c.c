@@ -4,6 +4,7 @@
 
  void printCenas(int n_blocks, float taxaDeCompressao, double time, char *fileShaf, int *tamanhoBlocos, int *tamanhoBlocosCodificado){
     int i;
+    printf ("\n\n\n\n");
     printf ("Bruno Filipe, a93298, João Delgado, a93240, MIEI/CD, 1-jan-2021 \n");
     printf ("Módulo: C (codificação dum ficheiro de símbolos)\n");
     printf ("Número de blocos: %d\n", n_blocks);
@@ -84,13 +85,13 @@ void importCode(char* codFile, int n_blocks, CODFREQ (*matriz)[SIMBOLOS], int *t
             while(c != '@'){
                 if(c == ';') (matriz[blocos][simbolos]).cod = NULL;
                 else{
-                    (matriz[blocos][simbolos]).cod = malloc(1);
+                    (matriz[blocos][simbolos]).cod = malloc(50);
                     codigo = 0;
                     while(c != ';' && c != '@'){
                       (matriz[blocos][simbolos]).cod[codigo] = c;
                       codigo++;
                       c = fgetc(cod);
-                      (matriz[blocos][simbolos]).cod = realloc((matriz[blocos][simbolos]).cod,1);
+                      //(matriz[blocos][simbolos]).cod = realloc((matriz[blocos][simbolos]).cod,1);
                     }
                     (matriz[blocos][simbolos]).cod[codigo] = '\0'; 
                     if(c == '@') fseek(cod, -1, SEEK_CUR);  
@@ -148,16 +149,23 @@ void importFreq(char* codFile,int n_blocks, CODFREQ (*matriz)[SIMBOLOS]){
 
 unsigned char *codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS], int tamanhoBloco, int bloco, int n_blocks, int *tamanhoBytes){
     printf ("Entrei na codificaBloco: bloco %d\n", bloco);
+    //printf ("Hello\n");
     int tamanhoCodBits,simbolo,index, i, i_bit,byte;
     unsigned char *blocoCodificado;
     tamanhoCodBits = tamanhoBlocoCodBits(matriz,bloco);
+    printf ("tamanhoCodBits: %d", tamanhoCodBits);
+    printf ("Hello\n");
     char Wbuffer[tamanhoCodBits];
+    printf ("Hello\n");
     for (int j = 0; j < tamanhoCodBits; j++) Wbuffer[j] = '\0';
     for(int i = 0; i < tamanhoBloco; i++){
         simbolo = buffer[i];
         strcat (Wbuffer, (matriz[bloco][simbolo]).cod);
+        //free((matriz[bloco][simbolo]).cod);
     }
     (*tamanhoBytes) = tamanhoCodBits/8 + 1;
+    printf ("tamanhoBytes: %d\n", *tamanhoBytes);
+    //printf ("Hello\n");
     blocoCodificado = malloc(*tamanhoBytes);
     index = 0;
     i_bit = 7;
@@ -177,6 +185,7 @@ unsigned char *codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS],
 }
 
 void codificaFile(char *filename, char tipo, int n_blocks, CODFREQ (*matriz)[SIMBOLOS], int *tamanhoBlocos, int *tamanhoBlocosCodificado, char *fileShaf, float *tamanhoGlobal, float *tamanhoGlobalCodificado){
+    //printf ("Entrei na CodificaFile\n");
     unsigned char *buffer,*Wbuffer;
     int tamanho = 0,tamanhoBlocoCodificado;
     FILE *file = fopen(filename,"rb");
@@ -218,11 +227,24 @@ int moduloC(char *filename, int begin){
         tipo = tipoFicheiro(cod);
         n_blocks = nBlocks(cod);
         fclose(cod);
+        //printf ("%d\n", n_blocks);
+        //printf ("%c\n", tipo);
         CODFREQ matriz[n_blocks][SIMBOLOS];
         int tamanhoBlocos[n_blocks],tamanhoBlocosCodificado[n_blocks];
+        //printf("%s\n", codFile);
+        //printf("%s\n", fileFreq);
         importCode(codFile, n_blocks, matriz ,tamanhoBlocos); // importar os codigos shanonfannon
+        //printf ("Passei pela importFreq");
+        importFreq(fileFreq,n_blocks,matriz);// importar as frequencias
+        for (int j = 0; j < n_blocks; j++){
+            printf("\n\nBloco: %d\n\n", j);
+            for (int i = 0; i < SIMBOLOS; i++)
+                printf (" (%s,%d,%d,%c) ", matriz[j][i].cod,matriz[j][i].freq, i, i);
+        }
+        //printf ("Passei pela importFreq");
+        
         codificaFile(filename,tipo,n_blocks,matriz,tamanhoBlocos, tamanhoBlocosCodificado, strcat(fileShaf,".shaf"), &tamanhoGlobal, &tamanhoGlobalCodificado);
-        taxaDeCompressao = tamanhoGlobal/tamanhoGlobalCodificado;
+        taxaDeCompressao = tamanhoGlobalCodificado/tamanhoGlobal;
         clock_t end = clock();
         double time = (double)(end - begin)/CLOCKS_PER_SEC;
         printCenas(n_blocks, taxaDeCompressao, time, fileShaf, tamanhoBlocos, tamanhoBlocosCodificado);
