@@ -9,8 +9,7 @@
     printf ("Módulo: C (codificação dum ficheiro de símbolos)\n");
     printf ("Número de blocos: %d\n", n_blocks);
     for (i = 0; i < n_blocks - 1; i++) 
-        printf ("Tamanho antes/depois & taxa de compressão (bloco %d): %d/%d\n", i+1, tamanhoBlocos[0], tamanhoBlocosCodificado[i]);
-    printf ("Tamanho antes/depois & taxa de compressão (bloco %d): %d/%d\n", i+1, tamanhoBlocos[1], tamanhoBlocosCodificado[i]);
+        printf ("Tamanho antes/depois & taxa de compressão (bloco %d): %d/%d\n", i+1, tamanhoBlocos[i], tamanhoBlocosCodificado[i]);
     printf ("Taxa de compressão global: %f\n", taxaDeCompressao); //print para o terminal
     printf ("Tempo de execução do módulo (milissegundos): %f\n", time*1000); //print para o terminal 
     printf ("%s\n", fileShaf);
