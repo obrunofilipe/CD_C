@@ -44,17 +44,6 @@ int tamanhoBlocoCodBits(CODFREQ (*matriz)[SIMBOLOS], int bloco){
     return tamanhoCod;
 }
 
-//int tamanhoBlocoCod(CODFREQ (*matriz)[SIMBOLOS], int bloco){
-//    int tamanhoCod = 0;
-//    for(int simbolo = 0; simbolo < SIMBOLOS; simbolo++){
-//        if( (matriz[bloco][simbolo]).cod != NULL){
-//            tamanhoCod += strlen((matriz[bloco][simbolo]).cod) * (matriz[bloco][simbolo]).freq;
-//        }
-//    }
-//    tamanhoCod = (tamanhoCod/8) + 1;
-//    return tamanhoCod;
-//}
-
 void importCode(char* codFile, int n_blocks, CODFREQ (*matriz)[SIMBOLOS], int *tamanhoBlocos){
     FILE *cod = fopen (codFile, "rb");
     int arrobas = 0;
@@ -77,10 +66,9 @@ void importCode(char* codFile, int n_blocks, CODFREQ (*matriz)[SIMBOLOS], int *t
             while((c = fgetc(cod)) != '@'){
                 tamanho *= 10;
                 tamanho += (c-48);
-                tamanhoBlocos[blocos] = tamanho;
             }
+            tamanhoBlocos[blocos] = tamanho;
             c = fgetc(cod);
-            //printf ("  %c  ", c);
 
             while(c != '@'){
                 if(c == ';') (matriz[blocos][simbolos]).cod = NULL;
@@ -91,7 +79,6 @@ void importCode(char* codFile, int n_blocks, CODFREQ (*matriz)[SIMBOLOS], int *t
                       (matriz[blocos][simbolos]).cod[codigo] = c;
                       codigo++;
                       c = fgetc(cod);
-                      //(matriz[blocos][simbolos]).cod = realloc((matriz[blocos][simbolos]).cod,1);
                     }
                     (matriz[blocos][simbolos]).cod[codigo] = '\0'; 
                     if(c == '@') fseek(cod, -1, SEEK_CUR);  
@@ -154,12 +141,14 @@ unsigned char *codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS],
     unsigned char *blocoCodificado;
 
     tamanhoCodBits = tamanhoBlocoCodBits(matriz,bloco);
-    
+    printf ("tamanhoCodBits: %d\n", tamanhoCodBits);
+
     (*tamanhoBytes) = tamanhoCodBits/8 + 1;
     printf ("tamanhoBytes: %d\n", *tamanhoBytes);
     
     blocoCodificado = malloc(*tamanhoBytes);
     if (!blocoCodificado) printf ("Não malloc\n");
+
     char **bufferW = malloc((*tamanhoBytes) * sizeof(char *));
     for (int i = 0; i < *tamanhoBytes; i++)
         bufferW[i] = malloc(8 * sizeof(char));
@@ -190,8 +179,6 @@ unsigned char *codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS],
         index++;
     }
 
-
-    
     byte = 0;
     for (i = 0; i < *tamanhoBytes; i++){
         for(i_bit = 0 ; i_bit < 8 ; i_bit++){
@@ -201,21 +188,10 @@ unsigned char *codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS],
         byte = 0;
     }
 
+    for (int i = 0; i < *tamanhoBytes; i++)
+        free(bufferW[i]);
+    free (bufferW);
 
-
-    /*
-    for(i = 0; bufferW[i] != '\0' && index < *tamanhoBytes; i++){
-        if(i_bit == -1){
-            i_bit = 7;
-            blocoCodificado[index] = byte;
-            index++;
-            byte = 0;
-        }
-        if (Wbuffer[i] == '1') byte = byte + pow(2,i_bit);
-        i_bit--;
-    }
-    if(index < (*tamanhoBytes)) blocoCodificado[index] = byte;
-    */
     return blocoCodificado;
 }
 
@@ -239,6 +215,7 @@ void codificaFile(char *filename, char tipo, int n_blocks, CODFREQ (*matriz)[SIM
         *tamanhoGlobal += tamanho;
         *tamanhoGlobalCodificado += tamanhoBlocoCodificado;
     }
+    printf ("%d", tamanhoBlocoCodificado);
     fclose(file);
     fclose(shaf);
 }
