@@ -159,7 +159,7 @@ unsigned char *codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS],
     byte = 0;
     // tamanhoBloco -> tamanho do bloco do ficheiro original
     // tamanhoBytes -> tamanho do bloco codificado
-    
+
     for(int i = 0; i < tamanhoBloco; i++){
         simbolo = buffer[i];
         for (i_cod = 0; (matriz[bloco][simbolo]).cod[i_cod] != '\0'; i_cod++, index++){
@@ -173,7 +173,7 @@ unsigned char *codificaBloco(unsigned char *buffer, CODFREQ (*matriz)[SIMBOLOS],
             }
         }
     }
-    
+
     while(index < 8){ 
         bufferW[byte][index] = '0';
         index++;
@@ -199,25 +199,25 @@ void codificaFile(char *filename, char tipo, int n_blocks, CODFREQ (*matriz)[SIM
     //printf ("Entrei na CodificaFile\n");
     unsigned char *buffer,*Wbuffer;
     int tamanho = 0,tamanhoBlocoCodificado;
-    FILE *file = fopen(filename,"rb");
-    FILE *shaf = fopen(fileShaf,"wb");
+    FILE *file = fopen(filename,"rb");//abrir o ficheiro original ou rle 
+    FILE *shaf = fopen(fileShaf,"wb");//criar o ficheiro .shaf
     for(int bloco = 0; bloco < n_blocks; bloco++){
-        tamanho = tamanhoBlocos[bloco];
-        buffer = malloc(tamanho);
-        fread(buffer,1,tamanho,file);
-        Wbuffer = codificaBloco(buffer,matriz,tamanho,bloco,n_blocks,&tamanhoBlocoCodificado);
-        if (bloco == 0) fprintf(shaf,"@%d@%d@",n_blocks,tamanhoBlocoCodificado);
-        else fprintf(shaf,"@%d@",tamanhoBlocoCodificado);
-        fwrite(Wbuffer,1,tamanhoBlocoCodificado,shaf);
-        free(Wbuffer);
-        free(buffer);
-        tamanhoBlocosCodificado[bloco] = tamanhoBlocoCodificado;
+        tamanho = tamanhoBlocos[bloco];//tamanho do bloco do ficheiro original ou .rle
+        buffer = malloc(tamanho);//alocar um buffer para o tamano do bloco do ficheiro
+        fread(buffer,1,tamanho,file);//preencher o buffer de bytes com a informaçao  do ficheiro
+        Wbuffer = codificaBloco(buffer,matriz,tamanho,bloco,n_blocks,&tamanhoBlocoCodificado);//preencher o Wbuffer com os bytes do bloco codificado
+        if (bloco == 0) fprintf(shaf,"@%d@%d@",n_blocks,tamanhoBlocoCodificado);//escrever o cabeçalho do ficheiro
+        else fprintf(shaf,"@%d@",tamanhoBlocoCodificado);//escrever o tamanho do bloco no ficheiro 
+        fwrite(Wbuffer,1,tamanhoBlocoCodificado,shaf);//escrever o Wbuffer no ficheiro
+        free(Wbuffer);//libertar a memoria alocada
+        free(buffer);//libertar memoria alocada
+        tamanhoBlocosCodificado[bloco] = tamanhoBlocoCodificado; //guardar o tamanho do bloco codificado
         *tamanhoGlobal += tamanho;
-        *tamanhoGlobalCodificado += tamanhoBlocoCodificado;
+        *tamanhoGlobalCodificado += tamanhoBlocoCodificado; 
     }
     printf ("%d", tamanhoBlocoCodificado);
-    fclose(file);
-    fclose(shaf);
+    fclose(file);//fechar o ficheiro original
+    fclose(shaf);//fechar o ficheiro .shaf
 }
 
 
