@@ -11,7 +11,7 @@ typedef struct codFreq{
     int freq;
 } CODFREQ;
 
-int nBlocks(FILE *);
+void printCenas(int , float , double , char *, int *, int *);
 
 char tipoFicheiro(FILE *);
 
