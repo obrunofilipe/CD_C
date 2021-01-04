@@ -1,4 +1,4 @@
-#ifndef MODULO_C_H_   
+#ifndef MODULO_C_H_
 #define MODULO_C_H_
 
 #include <stdio.h>
@@ -11,11 +11,13 @@ typedef struct codFreq{
     int freq;
 } CODFREQ;
 
-void printCenas(int , float , double , char *, int *, int *);
+void printFinal(int , float , double , char *, int *, int *);
 
+void libertaMatriz(CODFREQ [][SIMBOLOS] ,int);
+
+//funcao que retorna, a partir da matriz dos codigos e frequencias, o tamanho do codigo final e retorna esse tamanho(em bytes)
 char tipoFicheiro(FILE *);
 
-int nDigitos(int);
 //funcao que retorna, a partir da matriz dos codigos e frequencias, o tamanho do codigo final e retorna esse tamanho(em bytes)
 int tamanhoBlocoCodBits(CODFREQ[][SIMBOLOS], int );
 
